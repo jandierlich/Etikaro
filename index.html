@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Etikaro</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3A2B8C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237B5FE8'/%3E%3Cstop offset='1' stop-color='%232A1B6B'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23g)'/%3E%3Cpath d='M30 32h34l8 8v28a4 4 0 0 1-4 4H30a4 4 0 0 1-4-4V36a4 4 0 0 1 4-4z' fill='none' stroke='white' stroke-width='5'/%3E%3Ccircle cx='47' cy='54' r='9' fill='none' stroke='white' stroke-width='5'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --grad1:#7B5FE8; --grad2:#2A1B6B;
+    --page:#F3F1FA; --card:#FFFFFF; --line:#ECE9F7;
+    --text:#1C1B29; --text-soft:#8783A0;
+    --violet:#6C4FE0; --violet-soft:#EFEAFC;
+    --teal:#17B890; --teal-soft:#E5F9F3;
+    --pink:#E63980; --pink-soft:#FCE7EF;
+    --red:#E1483F; --red-soft:#FBEAEA;
+    --radius-lg:26px; --radius:16px;
+    --mono:"SF Mono","Courier New",Courier,monospace;
+    --sans:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page:#111018; --card:#1C1B26; --line:#2C2A3B;
+      --text:#F2F1F8; --text-soft:#9490AC;
+      --violet-soft:#241E42; --teal-soft:#12332A; --pink-soft:#3A1B28; --red-soft:#3A1E1C;
+    }
+  }
+  html.force-dark{
+    --page:#111018; --card:#1C1B26; --line:#2C2A3B;
+    --text:#F2F1F8; --text-soft:#9490AC;
+    --violet-soft:#241E42; --teal-soft:#12332A; --pink-soft:#3A1B28; --red-soft:#3A1E1C;
+  }
+  html.force-light{
+    --page:#F3F1FA; --card:#FFFFFF; --line:#ECE9F7;
+    --text:#1C1B29; --text-soft:#8783A0;
+    --violet-soft:#EFEAFC; --teal-soft:#E5F9F3; --pink-soft:#FCE7EF; --red-soft:#FBEAEA;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%; background:var(--page); color:var(--text); font-family:var(--sans); overscroll-behavior-y:none;}
+  #app{max-width:560px; margin:0 auto; min-height:100%; display:flex; flex-direction:column; padding-bottom:96px;}
+
+  /* ---- Hero Header ---- */
+  header.hero{
+    position:relative; overflow:hidden;
+    background:linear-gradient(135deg, var(--grad1), var(--grad2));
+    padding:calc(env(safe-area-inset-top) + 20px) 20px 46px;
+    border-radius:0 0 34px 34px;
+    color:#fff;
+  }
+  header.hero::before{
+    content:""; position:absolute; top:-60px; right:-70px; width:220px; height:220px; border-radius:50%;
+    background:rgba(255,255,255,0.08);
+  }
+  header.hero::after{
+    content:""; position:absolute; bottom:-90px; left:-50px; width:180px; height:180px; border-radius:50%;
+    background:rgba(255,255,255,0.06);
+  }
+  .hero-top{display:flex; align-items:flex-start; justify-content:space-between; position:relative; z-index:2;}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:rgba(255,255,255,0.7); margin:0 0 6px;}
+  header.hero h1{font-size:30px; font-weight:800; margin:0; letter-spacing:-0.5px;}
+  .dark-toggle{
+    width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); border:none; color:#fff;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .dark-toggle svg{width:19px; height:19px;}
+
+  /* Segmented control, overlapping hero bottom */
+  .segmented{
+    position:relative; z-index:3; margin:-30px 16px 0; background:var(--card); border-radius:16px; padding:4px;
+    display:flex; box-shadow:0 8px 24px rgba(30,20,70,0.18);
+  }
+  .segmented button{flex:1; border:none; background:none; padding:11px 0; font-size:14px; font-weight:700; color:var(--text-soft); border-radius:12px;}
+  .segmented button.active{background:var(--violet); color:#fff;}
+
+  main{flex:1; padding:18px 16px 0;}
+
+  .toolbar{display:flex; gap:8px; margin-bottom:16px;}
+  .toolbar input[type=text]{
+    flex:1; font-family:var(--sans); font-size:15px; padding:11px 14px;
+    border:none; border-radius:12px; background:var(--card); color:var(--text); box-shadow:0 1px 4px rgba(30,20,70,0.06);
+  }
+
+  .section-label{font-family:var(--mono); font-size:11px; letter-spacing:1.8px; text-transform:uppercase; color:var(--text-soft); margin:0 0 10px;}
+
+  /* Category summary rows (tap = filter) */
+  .cat-list{margin-bottom:22px;}
+  .cat-row{
+    display:flex; align-items:center; gap:12px; background:var(--card); border-radius:16px; padding:13px 16px; margin-bottom:10px;
+    box-shadow:0 1px 4px rgba(30,20,70,0.06); cursor:pointer;
+  }
+  .cat-row .dot{
+    width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff;
+  }
+  .cat-row .dot svg{width:14px; height:14px;}
+  .cat-row .label{flex:1; font-size:15px; font-weight:700;}
+  .cat-row .label small{display:block; font-weight:400; font-size:12.5px; color:var(--text-soft); margin-top:1px;}
+  .cat-row .val{font-size:16px; font-weight:800;}
+  .cat-row.active{outline:2px solid var(--violet);}
+
+  /* List rows */
+  .group{background:var(--card); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:20px; box-shadow:0 1px 4px rgba(30,20,70,0.06);}
+  .row{display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line); cursor:pointer;}
+  .row:last-child{border-bottom:none;}
+  .row .thumb{width:42px; height:42px; border-radius:11px; background:var(--violet-soft); display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;}
+  .row .meta{flex:1; min-width:0;}
+  .row .name{font-size:15.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .row .sub{font-size:12.5px; color:var(--text-soft); margin-top:1px;}
+  .row .qty{font-size:15px; font-weight:800; color:var(--violet); min-width:28px; text-align:right;}
+
+  /* Table view */
+  .table-wrap{background:var(--card); border-radius:var(--radius-lg); overflow-x:auto; margin-bottom:20px; box-shadow:0 1px 4px rgba(30,20,70,0.06); -webkit-overflow-scrolling:touch;}
+  table{border-collapse:collapse; width:100%; font-size:13px; min-width:560px;}
+  thead th{position:sticky; top:0; background:var(--card); text-align:left; padding:12px; font-weight:700; color:var(--text-soft); border-bottom:1px solid var(--line); cursor:pointer; white-space:nowrap; font-family:var(--mono); font-size:10.5px; letter-spacing:1px; text-transform:uppercase;}
+  thead th .arrow{opacity:.5; font-size:9px; margin-left:3px;}
+  tbody td{padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  tbody td.name-cell{white-space:normal; max-width:180px; font-weight:600;}
+  tbody tr:last-child td{border-bottom:none;}
+
+  #empty{text-align:center; padding:60px 20px; color:var(--text-soft);}
+  #empty .glyph{font-size:38px; margin-bottom:12px;}
+  #empty p{font-size:14px; line-height:1.5;}
+
+  .fab{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom) + 78px);
+    background:linear-gradient(135deg, var(--grad1), var(--grad2)); color:#fff; border:none;
+    font-weight:700; font-size:15px; padding:15px 28px; border-radius:26px;
+    box-shadow:0 8px 20px rgba(90,60,200,0.4); display:flex; align-items:center; gap:9px; z-index:30;
+  }
+  .fab svg{width:19px; height:19px;}
+
+  nav.bottom{
+    position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--line); z-index:25;
+    display:flex; justify-content:space-around; padding:9px 6px calc(6px + env(safe-area-inset-bottom));
+  }
+  nav.bottom button{background:none; border:none; color:var(--text-soft); font-size:10.5px; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:3px; padding:3px 6px; flex:1;}
+  nav.bottom button.active{color:var(--violet);}
+  nav.bottom button svg{width:21px; height:21px;}
+
+  .screen{position:fixed; inset:0; background:var(--page); z-index:50; display:flex; flex-direction:column; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1);}
+  .screen.open{transform:translateY(0);}
+  .screen-head{padding:calc(env(safe-area-inset-top) + 14px) 18px 14px; display:flex; align-items:center; justify-content:space-between; background:var(--card); border-bottom:1px solid var(--line);}
+  .screen-head h2{font-size:17px; font-weight:800; margin:0;}
+  .screen-head button.close{background:var(--violet-soft); border:none; border-radius:10px; padding:8px 14px; font-size:13px; font-weight:700; color:var(--violet);}
+  .screen-body{flex:1; overflow-y:auto; padding:18px;}
+
+  .field{margin-bottom:17px;}
+  .field label{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:1.4px; text-transform:uppercase; font-weight:600; color:var(--text-soft); margin-bottom:7px;}
+  .field input[type=text], .field textarea{width:100%; font-family:var(--sans); font-size:15.5px; padding:12px 14px; border:none; border-radius:12px; background:var(--card); color:var(--text); box-shadow:0 1px 4px rgba(30,20,70,0.06);}
+  .field textarea{min-height:90px; resize:vertical;}
+
+  .qty-row{display:flex; align-items:center; gap:16px;}
+  .qty-row button{width:42px; height:42px; border-radius:50%; border:none; background:var(--violet-soft); font-size:20px; color:var(--violet); font-weight:800;}
+  .qty-row .num{font-size:24px; font-weight:800; min-width:36px; text-align:center;}
+
+  .photo-preview{width:100%; max-height:260px; object-fit:contain; border-radius:16px; background:var(--card); margin-bottom:14px; box-shadow:0 1px 4px rgba(30,20,70,0.06);}
+
+  .btn{display:block; width:100%; text-align:center; padding:14px; border-radius:14px; border:none; font-weight:700; font-size:15px; margin-top:10px; cursor:pointer;}
+  .btn-primary{background:linear-gradient(135deg, var(--grad1), var(--grad2)); color:#fff; box-shadow:0 6px 16px rgba(90,60,200,0.35);}
+  .btn-secondary{background:var(--violet-soft); color:var(--violet);}
+  .btn-danger{background:var(--red-soft); color:var(--red);}
+  .btn-ghost{background:none; color:var(--text-soft); font-weight:400; font-size:14px;}
+
+  .ocr-box{background:var(--card); border-radius:12px; padding:12px 14px; font-size:12.5px; white-space:pre-wrap; color:var(--text-soft); max-height:130px; overflow-y:auto; margin-bottom:16px; box-shadow:0 1px 4px rgba(30,20,70,0.06);}
+  .status-line{font-size:13px; color:var(--text-soft); text-align:center; padding:12px 0;}
+
+  .capture-zone{border:1.5px dashed var(--violet); border-radius:18px; padding:46px 20px; text-align:center; color:var(--violet); margin-bottom:16px; background:var(--violet-soft); display:block;}
+  .capture-zone svg{width:40px; height:40px; margin-bottom:10px;}
+  .capture-zone p{font-size:14px; font-weight:700; margin:4px 0 0;}
+  input[type=file]{display:none;}
+
+  .dup-banner{background:var(--teal-soft); border-radius:12px; color:var(--teal); padding:12px 14px; font-size:13px; margin-bottom:16px; font-weight:600;}
+
+  .list-row{background:var(--card); border-radius:var(--radius-lg); padding:16px; margin-bottom:14px; box-shadow:0 1px 4px rgba(30,20,70,0.06);}
+  .list-row h3{font-size:14px; font-weight:800; margin:0 0 5px;}
+  .list-row p{font-size:13px; color:var(--text-soft); margin:0 0 10px; line-height:1.55;}
+
+  /* Export selection rows (checkbox style) */
+  .exp-row{display:flex; align-items:center; gap:12px; background:var(--card); border-radius:16px; padding:13px 16px; margin-bottom:10px; box-shadow:0 1px 4px rgba(30,20,70,0.06); cursor:pointer;}
+  .exp-row .check{width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff; transition:opacity .15s;}
+  .exp-row .check svg{width:13px; height:13px;}
+  .exp-row.off .check{opacity:.25; background:var(--text-soft) !important;}
+  .exp-row .label{flex:1; font-size:15px; font-weight:700;}
+  .exp-row .label small{display:block; font-weight:400; font-size:12px; color:var(--text-soft);}
+  .exp-row .val{font-size:15px; font-weight:800; color:var(--text-soft);}
+
+  .summary-bar{
+    display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, var(--grad1), var(--grad2));
+    color:#fff; border-radius:16px; padding:16px 18px; margin:6px 0 18px; font-weight:700; font-size:15px;
+  }
+
+  .pdf-frame{width:100%; height:60vh; border:none; border-radius:16px; background:var(--card); margin-bottom:14px; box-shadow:0 1px 4px rgba(30,20,70,0.06);}
+
+  .toast{position:fixed; bottom:110px; left:50%; transform:translateX(-50%); background:var(--text); color:var(--page); padding:11px 20px; border-radius:24px; font-size:13.5px; z-index:80; opacity:0; pointer-events:none; transition:opacity .2s ease;}
+  .toast.show{opacity:1;}
+
+  /* Status-Leiste auf JEDEM Screen lesbar halten (iOS black-translucent):
+     feste dunkle Leiste hinter der Statusleiste, unabhängig vom Seitenhintergrund. */
+  body::before{
+    content:""; position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top);
+    background:var(--grad2); z-index:999; pointer-events:none;
+  }
+
+  /* iOS-typische "Grabber"-Leiste oben an jedem Sheet */
+  .screen-head{position:relative;}
+  .screen-head::before{
+    content:""; position:absolute; top:7px; left:50%; transform:translateX(-50%);
+    width:36px; height:5px; border-radius:3px; background:var(--line);
+  }
+  .screen-head{padding-top:calc(env(safe-area-inset-top) + 20px);}
+
+  ::-webkit-scrollbar{width:0; height:0;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="hero">
+    <div class="hero-top">
+      <div>
+        <p class="eyebrow">Register</p>
+        <h1>Etikaro</h1>
+      </div>
+      <button class="dark-toggle" id="darkToggle" title="Darstellung umschalten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="segmented" id="viewSwitch">
+    <button class="active" data-view="list">Liste</button>
+    <button data-view="table">Tabelle</button>
+  </div>
+
+  <main>
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="Suchen…">
+    </div>
+
+    <p class="section-label" id="catLabel" style="display:none;">Kategorien (antippen zum Filtern)</p>
+    <div class="cat-list" id="catList"></div>
+
+    <p class="section-label" id="totalLabel"></p>
+    <div class="group" id="listView"></div>
+    <div class="table-wrap" id="tableView" style="display:none;"></div>
+    <div id="empty" style="display:none;">
+      <div class="glyph">📦</div>
+      <p>Noch keine Einträge.<br>Tippe unten auf „Scannen“, um loszulegen.</p>
+    </div>
+  </main>
+
+  <button class="fab" id="scanBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+    Scannen
+  </button>
+
+  <nav class="bottom">
+    <button class="active" data-nav="register">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Bestand
+    </button>
+    <button data-nav="export">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+      Export
+    </button>
+    <button data-nav="backup">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+      Backup
+    </button>
+    <button data-nav="info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="8" r=".5" fill="currentColor"/></svg>
+      Info
+    </button>
+  </nav>
+
+  <!-- SCAN SCREEN -->
+  <div class="screen" id="scanScreen">
+    <div class="screen-head"><h2>Neu scannen</h2><button class="close" data-close="scanScreen">Schließen</button></div>
+    <div class="screen-body" id="scanBody">
+      <label class="capture-zone" id="captureZone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+        <p>Etikett fotografieren</p>
+        <input type="file" id="fileInput" accept="image/*" capture="environment">
+      </label>
+      <div id="scanStatus"></div>
+    </div>
+  </div>
+
+  <!-- EDIT/CONFIRM SCREEN -->
+  <div class="screen" id="editScreen">
+    <div class="screen-head"><h2 id="editTitle">Eintrag prüfen</h2><button class="close" data-close="editScreen">Abbrechen</button></div>
+    <div class="screen-body">
+      <img id="editPhoto" class="photo-preview" style="display:none;">
+      <div id="dupBanner" class="dup-banner" style="display:none;"></div>
+
+      <div class="field"><label>Erkannter Text (OCR)</label><div class="ocr-box" id="ocrRaw">—</div></div>
+      <div class="field"><label>Produktname *</label><input type="text" id="fName" placeholder="z. B. Olivenöl, Nähmaschinenöl …"></div>
+      <div class="field"><label>Kategorie</label><input type="text" id="fCat" placeholder="z. B. Küche, Bad, Keller, Werkstatt" list="catDatalist"><datalist id="catDatalist"></datalist></div>
+      <div class="field"><label>Menge / Volumen</label><input type="text" id="fMenge" placeholder="z. B. 500 ml, 250 g"></div>
+      <div class="field"><label>Notiz</label><textarea id="fNotiz" placeholder="Haltbarkeit, Standort, Zustand …"></textarea></div>
+      <div class="field"><label>Anzahl</label>
+        <div class="qty-row"><button type="button" id="qtyMinus">–</button><div class="num" id="qtyNum">1</div><button type="button" id="qtyPlus">+</button></div>
+      </div>
+
+      <button class="btn btn-primary" id="saveEntryBtn">Speichern</button>
+      <button class="btn btn-danger" id="deleteEntryBtn" style="display:none;">Eintrag löschen</button>
+      <button class="btn btn-ghost" id="cancelEditBtn">Abbrechen</button>
+    </div>
+  </div>
+
+  <!-- EXPORT (PDF) SCREEN -->
+  <div class="screen" id="exportScreen">
+    <div class="screen-head"><h2>PDF-Export</h2><button class="close" data-close="exportScreen">Schließen</button></div>
+    <div class="screen-body">
+      <p class="section-label">Kategorien auswählen (antippen)</p>
+      <div id="exportCatList"></div>
+      <div class="summary-bar"><span>Ausgewählt</span><span id="exportSummary">0 Einträge</span></div>
+      <button class="btn btn-primary" id="buildPdfBtn">PDF-Vorschau erstellen</button>
+      <p id="exportHint" class="list-row" style="display:none;"></p>
+    </div>
+  </div>
+
+  <!-- PDF PREVIEW SCREEN -->
+  <div class="screen" id="pdfPreviewScreen">
+    <div class="screen-head"><h2>Vorschau</h2><button class="close" data-close="pdfPreviewScreen">Verwerfen</button></div>
+    <div class="screen-body">
+      <iframe class="pdf-frame" id="pdfFrame"></iframe>
+      <button class="btn btn-primary" id="savePdfBtn">PDF speichern</button>
+      <button class="btn btn-ghost" id="discardPdfBtn">Verwerfen</button>
+    </div>
+  </div>
+
+  <!-- BACKUP SCREEN -->
+  <div class="screen" id="backupScreen">
+    <div class="screen-head"><h2>Backup</h2><button class="close" data-close="backupScreen">Schließen</button></div>
+    <div class="screen-body">
+      <div class="list-row"><h3>Sichern</h3><p>Exportiert den kompletten Bestand inkl. Fotos als JSON-Datei — für die Wiederherstellung in Etikaro, z. B. bei Gerätewechsel.</p><button class="btn btn-primary" id="exportJsonBtn">Bestand exportieren</button></div>
+      <div class="list-row"><h3>Wiederherstellen</h3><p>Lädt ein zuvor exportiertes Backup. Bestehende Einträge mit gleicher ID werden überschrieben, alle anderen bleiben erhalten.</p>
+        <label class="btn btn-secondary" style="display:block; cursor:pointer;">Backup-Datei wählen<input type="file" id="importInput" accept="application/json" style="display:none;"></label>
+      </div>
+      <div class="list-row"><h3>Alle Daten löschen</h3><p>Entfernt sämtliche Einträge unwiderruflich von diesem Gerät.</p><button class="btn btn-danger" id="wipeBtn">Bestand komplett leeren</button></div>
+    </div>
+  </div>
+
+  <!-- INFO SCREEN -->
+  <div class="screen" id="infoScreen">
+    <div class="screen-head"><h2>Info</h2><button class="close" data-close="infoScreen">Schließen</button></div>
+    <div class="screen-body">
+      <div class="list-row"><h3>Über Etikaro</h3><p>Etikaro liest Etiketten von Flaschen, Gläsern und Schachteln per Texterkennung (OCR) direkt auf diesem Gerät aus und legt daraus einen durchsuchbaren Bestand an.</p></div>
+      <div class="list-row"><h3>Datenschutz</h3><p>Alle Fotos, Texte und Daten verbleiben ausschließlich lokal auf diesem Gerät (IndexedDB). Es findet keine Übertragung an einen Server statt. Die Texterkennung läuft vollständig im Browser.</p></div>
+      <div class="list-row"><h3>Verwendete Software</h3><p>Texterkennung: Tesseract.js (Apache-2.0), Sprachdaten Deutsch (Apache-2.0). PDF-Erstellung: jsPDF (MIT-Lizenz). Alle Bestandteile sind Teil dieses Projekts und werden lokal ausgeliefert — keine Drittanbieter-Verbindungen. Diese App ist quelloffen und darf frei an andere weitergegeben werden.</p></div>
+      <div class="list-row">
+        <h3>Rechtliches</h3>
+        <p>Impressum und Datenschutzerklärung dieser App.</p>
+        <button class="btn btn-secondary" data-open="impressumScreen">Impressum öffnen</button>
+        <button class="btn btn-secondary" data-open="datenschutzScreen">Datenschutzerklärung öffnen</button>
+        <button class="btn btn-secondary" data-open="lizenzenScreen">Lizenzhinweise öffnen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIZENZEN SCREEN -->
+  <div class="screen" id="lizenzenScreen">
+    <div class="screen-head"><h2>Lizenzhinweise</h2><button class="close" data-close="lizenzenScreen">Schließen</button></div>
+    <div class="screen-body">
+      <div class="list-row">
+        <h3>Tesseract.js</h3>
+        <p>Copyright © Tesseract.js Contributors<br>Lizenz: Apache License 2.0<br>github.com/naptha/tesseract.js</p>
+      </div>
+      <div class="list-row">
+        <h3>Tesseract.js-core</h3>
+        <p>Copyright © Tesseract.js-core Contributors<br>Lizenz: Apache License 2.0<br>github.com/naptha/tesseract.js-core</p>
+      </div>
+      <div class="list-row">
+        <h3>Tesseract Sprachdaten Deutsch</h3>
+        <p>Copyright © Tesseract OCR Contributors<br>Lizenz: Apache License 2.0<br>github.com/tesseract-ocr/tessdata_best</p>
+      </div>
+      <div class="list-row">
+        <h3>jsPDF</h3>
+        <p>Copyright © jsPDF Contributors<br>Lizenz: MIT License<br>github.com/parallax/jsPDF</p>
+      </div>
+      <div class="list-row">
+        <h3>Volltexte</h3>
+        <p>Die vollständigen Lizenztexte liegen der App als Datei „THIRD-PARTY-NOTICES.txt" bei sowie unter den oben verlinkten Projektseiten.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPRESSUM SCREEN -->
+  <div class="screen" id="impressumScreen">
+    <div class="screen-head"><h2>Impressum</h2><button class="close" data-close="impressumScreen">Schließen</button></div>
+    <div class="screen-body">
+      <div class="list-row">
+        <h3>Angaben gemäß § 5 DDG (vormals § 5 TMG)</h3>
+        <p>
+          [Vorname Nachname]<br>
+          [Straße Hausnummer]<br>
+          [PLZ Ort]
+        </p>
+      </div>
+      <div class="list-row">
+        <h3>Kontakt</h3>
+        <p>E-Mail: [deine@email.de]</p>
+      </div>
+      <div class="list-row">
+        <h3>Hinweis</h3>
+        <p>Dies ist eine ausfüllbare Vorlage, keine Rechtsberatung. Bitte die Platzhalter oben vor Veröffentlichung durch deine echten Angaben ersetzen (Name und ladungsfähige Anschrift sind Pflicht, sobald die Seite öffentlich erreichbar ist).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATENSCHUTZ SCREEN -->
+  <div class="screen" id="datenschutzScreen">
+    <div class="screen-head"><h2>Datenschutz</h2><button class="close" data-close="datenschutzScreen">Schließen</button></div>
+    <div class="screen-body">
+      <div class="list-row">
+        <h3>Verantwortlicher</h3>
+        <p>[Vorname Nachname], [Straße Hausnummer], [PLZ Ort], [deine@email.de]</p>
+      </div>
+      <div class="list-row">
+        <h3>Datenverarbeitung in der App</h3>
+        <p>Alle eingescannten Produkte, Fotos, Notizen und Mengenangaben werden ausschließlich lokal auf deinem Gerät gespeichert (IndexedDB). Es gibt keinen Server dieser App, der diese Daten empfängt oder speichert.</p>
+      </div>
+      <div class="list-row">
+        <h3>Hosting</h3>
+        <p>Diese Seite wird über GitHub Pages (GitHub, Inc./GitHub B.V.) bereitgestellt. Beim Aufruf verarbeitet GitHub automatisch technische Zugriffsdaten (u. a. IP-Adresse) in Server-Logs. Details in der Datenschutzerklärung von GitHub.</p>
+      </div>
+      <div class="list-row">
+        <h3>Eingebundene externe Dienste</h3>
+        <p>Keine. Texterkennung (Tesseract.js) und PDF-Erstellung (jsPDF) sind vollständig im Projekt enthalten und werden mit ausgeliefert — es werden zu keinem Zeitpunkt Dateien von Drittanbietern nachgeladen.</p>
+      </div>
+      <div class="list-row">
+        <h3>Kein Tracking</h3>
+        <p>Diese App verwendet keine Cookies, keine Analyse- oder Werbedienste.</p>
+      </div>
+      <div class="list-row">
+        <h3>Hinweis</h3>
+        <p>Dies ist eine ausfüllbare Vorlage, keine Rechtsberatung. Für eine rechtssichere Veröffentlichung empfiehlt sich die Prüfung durch einen Anwalt oder einen Generator wie eRecht24.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="tesseract.min.js"></script>
+<script src="jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
