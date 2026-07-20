@@ -9,8 +9,8 @@
 // (Anführungszeichen "..." dabei stehen lassen).
 
 window.ETIKARO_CONFIG = {
-  name:    "Vorname Nachname",
-  strasse: "Straße Hausnummer",
-  ort:     "PLZ Ort",
-  email:   "deine@email.de"
+  name:    "Jan Dierlich",
+  strasse: "Steenacker 33",
+  ort:     "25499 Tangstedt",
+  email:   "jandierlich@googlemail.com"
 };
