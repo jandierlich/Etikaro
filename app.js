@@ -295,38 +295,61 @@ document.getElementById('fileInput').addEventListener('change', async (e)=>{
   const dataUrl = await fileToDataUrl(file);
   pendingPhotoDataUrl = dataUrl;
 
-  const offlineNote = navigator.onLine ? '' : ' (offline — nutzt zwischengespeicherte Sprachdaten)';
+  const offlineNote = navigator.onLine ? '' : ' (offline)';
   statusEl.innerHTML = `<div class="status-line">Texterkennung läuft${offlineNote} …</div>`;
 
+  let recognizingStarted = false;
+  const makeLogger = ()=> (m)=>{
+    if(m.status === 'recognizing text'){
+      recognizingStarted = true;
+      const pct = Math.round((m.progress||0)*100);
+      statusEl.innerHTML = `<div class="status-line">Texterkennung läuft${offlineNote} … ${pct}%</div>`;
+    } else if(m.status === 'loading language traineddata' || m.status === 'loading tesseract core'){
+      statusEl.innerHTML = `<div class="status-line">Sprachdaten werden geladen${offlineNote} …</div>`;
+    }
+  };
+
+  // Fester Pfad auf die passende Kern-Datei statt Ordner-Auto-Erkennung
+  // (zuverlässiger, da wir bewusst nur die 2 benötigten LSTM-Varianten mitliefern).
+  const CORE_CANDIDATES = ['./tesseract-core-simd-lstm.wasm.js', './tesseract-core-lstm.wasm.js'];
+
+  let result = null;
+  let lastError = null;
+  for(const corePath of CORE_CANDIDATES){
+    recognizingStarted = false;
+    try{
+      result = await Tesseract.recognize(dataUrl, 'deu', {
+        workerPath: './worker.min.js',
+        corePath,
+        langPath: './',
+        logger: makeLogger()
+      });
+      break; // Erfolg — Schleife verlassen
+    }catch(err){
+      lastError = err;
+      console.error('OCR-Versuch fehlgeschlagen mit corePath', corePath, err);
+    }
+  }
+
   try{
-    const result = await Tesseract.recognize(dataUrl, 'deu', {
-      // Alles lokal aus dem Projektordner – keine Kontaktaufnahme zu Drittanbietern mehr.
-      workerPath: './worker.min.js',
-      corePath: './',
-      langPath: './',
-      logger: (m)=>{
-        if(m.status === 'recognizing text'){
-          const pct = Math.round((m.progress||0)*100);
-          statusEl.innerHTML = `<div class="status-line">Texterkennung läuft${offlineNote} … ${pct}%</div>`;
-        } else if(m.status === 'loading language traineddata' || m.status === 'loading tesseract core'){
-          statusEl.innerHTML = `<div class="status-line">Sprachdaten werden geladen${offlineNote} …</div>`;
-        }
-      }
-    });
+    if(!result) throw lastError || new Error('OCR fehlgeschlagen');
     const text = (result.data.text || '').trim();
-    // Erfolgs-Feedback: Vibration, wo vom Gerät/Browser unterstützt (Android u.a.).
-    // Hinweis: iOS Safari unterstützt die Vibration API bislang nicht (Apple-Einschränkung),
-    // daher zusätzlich eine kurze visuelle Bestätigung, die auf jedem Gerät sichtbar ist.
     if('vibrate' in navigator){ try{ navigator.vibrate(35); }catch(err){} }
+    if(!text && !recognizingStarted){
+      // Die Erkennung hat nie richtig gestartet — vermutlich fehlt/passt eine der 6 Dateien nicht.
+      statusEl.innerHTML = '<div class="status-line">Texterkennung konnte nicht starten. Bitte prüfen, ob alle 6 Dateien (tesseract.min.js, worker.min.js, tesseract-core-simd-lstm.wasm.js, tesseract-core-lstm.wasm.js, deu.traineddata.gz, jspdf.umd.min.js) korrekt benannt im selben Ordner liegen.</div>';
+      await new Promise(r=>setTimeout(r, 3200));
+      closeScreen('scanScreen');
+      openEditForNewScan('', dataUrl);
+      return;
+    }
     statusEl.innerHTML = '<div class="status-line">✓ Erkannt</div>';
     await new Promise(r=>setTimeout(r, 280));
     closeScreen('scanScreen');
     openEditForNewScan(text, dataUrl);
   }catch(err){
     console.error(err);
-    const hint = navigator.onLine
-      ? 'Texterkennung fehlgeschlagen. Bitte erneut versuchen oder Feld manuell ausfüllen.'
-      : 'Texterkennung offline nicht möglich, da die Sprachdaten noch nicht zwischengespeichert sind. Bitte einmal mit Internetverbindung scannen, danach funktioniert es auch offline.';
+    const hint = 'Texterkennung fehlgeschlagen. Bitte prüfen, ob alle 6 Zusatzdateien korrekt im Projektordner liegen, oder erneut versuchen.';
     statusEl.innerHTML = `<div class="status-line">${hint}</div>`;
     setTimeout(()=>{ closeScreen('scanScreen'); openEditForNewScan('', dataUrl); }, 1600);
   }
@@ -649,6 +672,22 @@ document.getElementById('wipeBtn').addEventListener('click', async ()=>{
   showToast('Bestand geleert.');
 });
 
+// ---------- Impressum/Datenschutz aus config.js befüllen ----------
+function fillLegalInfo(){
+  const cfg = (window.ETIKARO_CONFIG) || {};
+  const name = (cfg.name || '').trim();
+  const strasse = (cfg.strasse || '').trim();
+  const ort = (cfg.ort || '').trim();
+  const email = (cfg.email || '').trim();
+
+  const isPlaceholder = !name || name === 'Vorname Nachname' || !email || email === 'deine@email.de';
+
+  document.getElementById('impressumAdresse').innerHTML = `${esc(name)}<br>${esc(strasse)}<br>${esc(ort)}`;
+  document.getElementById('impressumEmail').textContent = `E-Mail: ${email}`;
+  document.getElementById('datenschutzVerantwortlicher').textContent = `${name}, ${strasse}, ${ort}, ${email}`;
+  document.getElementById('impressumConfigHint').style.display = isPlaceholder ? 'block' : 'none';
+}
+
 // ---------- Online/Offline ----------
 function updateOnlineStatus(){
   // (Badge derzeit nicht im Header sichtbar, Status steht für spätere Nutzung bereit.)
@@ -661,6 +700,7 @@ window.addEventListener('offline', updateOnlineStatus);
   await openDB();
   await refreshEntries();
   updateOnlineStatus();
+  fillLegalInfo();
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('service-worker.js').catch(()=>{});
   }
