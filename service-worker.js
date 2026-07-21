@@ -3,7 +3,7 @@
 // Liegt eine Antwort im Cache, wird sie sofort ausgeliefert (auch offline),
 // im Hintergrund wird bei bestehender Verbindung aktualisiert.
 
-const CACHE_NAME = 'etikaro-v8';
+const CACHE_NAME = 'etikaro-v11';
 
 const APP_SHELL = [
   './',

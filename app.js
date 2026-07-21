@@ -357,9 +357,14 @@ document.getElementById('fileInput').addEventListener('change', async (e)=>{
     openEditForNewScan(text, dataUrl);
   }catch(err){
     console.error(err);
-    const hint = 'Texterkennung fehlgeschlagen. Bitte prüfen, ob alle 6 Zusatzdateien korrekt im Projektordner liegen, oder erneut versuchen.';
-    statusEl.innerHTML = `<div class="status-line">${hint}</div>`;
-    setTimeout(()=>{ closeScreen('scanScreen'); openEditForNewScan('', dataUrl); }, 1600);
+    const details = (err && (err.message || err.toString())) || 'unbekannter Fehler';
+    statusEl.innerHTML = `<div class="status-line">Texterkennung fehlgeschlagen.</div><div class="ocr-box" style="margin-top:8px;">${esc(details)}</div>`;
+    document.getElementById('captureZone').style.display = 'none';
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 'btn btn-secondary';
+    retryBtn.textContent = 'Ohne OCR fortfahren';
+    retryBtn.onclick = ()=>{ closeScreen('scanScreen'); openEditForNewScan('', dataUrl); };
+    document.getElementById('scanBody').appendChild(retryBtn);
   }
 });
 
@@ -711,5 +716,13 @@ window.addEventListener('offline', updateOnlineStatus);
   fillLegalInfo();
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    // Sobald eine neue Version aktiv wird, Seite automatisch neu laden,
+    // damit Updates nicht erst durch mehrfaches manuelles Neuladen ankommen.
+    let refreshedOnce = false;
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(refreshedOnce) return;
+      refreshedOnce = true;
+      window.location.reload();
+    });
   }
 })();
