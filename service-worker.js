@@ -3,7 +3,7 @@
 // Liegt eine Antwort im Cache, wird sie sofort ausgeliefert (auch offline),
 // im Hintergrund wird bei bestehender Verbindung aktualisiert.
 
-const CACHE_NAME = 'etikaro-v12';
+const CACHE_NAME = 'etikaro-v17';
 
 const APP_SHELL = [
   './',
@@ -40,7 +40,7 @@ async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
 
-  const networkFetch = fetch(request)
+  const networkFetch = fetch(request, { cache: 'no-store' })
     .then((response) => {
       if (response && (response.ok || response.type === 'opaque')) {
         cache.put(request, response.clone()).catch(() => {});
