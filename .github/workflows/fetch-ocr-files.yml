@@ -1,0 +1,33 @@
+name: OCR-Bibliotheksdateien holen
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dateien herunterladen
+        run: |
+          set -e
+          curl -L -o tesseract.min.js "https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"
+          curl -L -o worker.min.js "https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/worker.min.js"
+          curl -L -o tesseract-core-simd-lstm.wasm.js "https://cdn.jsdelivr.net/npm/tesseract.js-core@5.0.0/tesseract-core-simd-lstm.wasm.js"
+          curl -L -o tesseract-core-lstm.wasm.js "https://cdn.jsdelivr.net/npm/tesseract.js-core@5.0.0/tesseract-core-lstm.wasm.js"
+          curl -L -o deu.traineddata.gz "https://cdn.jsdelivr.net/npm/@tesseract.js-data/deu@1.0.0/4.0.0_best_int/deu.traineddata.gz"
+          curl -L -o jspdf.umd.min.js "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"
+          echo "--- Dateigrößen zur Kontrolle ---"
+          ls -la tesseract.min.js worker.min.js tesseract-core-simd-lstm.wasm.js tesseract-core-lstm.wasm.js deu.traineddata.gz jspdf.umd.min.js
+
+      - name: Änderungen committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tesseract.min.js worker.min.js tesseract-core-simd-lstm.wasm.js tesseract-core-lstm.wasm.js deu.traineddata.gz jspdf.umd.min.js
+          git diff --cached --quiet && echo "Keine Änderungen." || git commit -m "OCR-Bibliotheksdateien automatisch aktualisiert"
+          git push
