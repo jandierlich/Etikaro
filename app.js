@@ -312,22 +312,30 @@ document.getElementById('fileInput').addEventListener('change', async (e)=>{
   // Fester Pfad auf die passende Kern-Datei statt Ordner-Auto-Erkennung
   // (zuverlässiger, da wir bewusst nur die 2 benötigten LSTM-Varianten mitliefern).
   const CORE_CANDIDATES = ['./tesseract-core-simd-lstm.wasm.js', './tesseract-core-lstm.wasm.js'];
+  // Beide Schreibweisen ausprobieren, da Dokumentation/Praxis dazu widersprüchlich sind.
+  const LANG_CANDIDATES = ['.', './'];
 
   let result = null;
   let lastError = null;
+  outer:
   for(const corePath of CORE_CANDIDATES){
-    recognizingStarted = false;
-    try{
-      result = await Tesseract.recognize(dataUrl, 'deu', {
-        workerPath: './worker.min.js',
-        corePath,
-        langPath: './',
-        logger: makeLogger()
-      });
-      break; // Erfolg — Schleife verlassen
-    }catch(err){
-      lastError = err;
-      console.error('OCR-Versuch fehlgeschlagen mit corePath', corePath, err);
+    for(const langPath of LANG_CANDIDATES){
+      recognizingStarted = false;
+      try{
+        result = await Tesseract.recognize(dataUrl, 'deu', {
+          workerPath: './worker.min.js',
+          corePath,
+          langPath,
+          logger: makeLogger()
+        });
+        if(result && (result.data.text || '').trim()){
+          break outer; // Text gefunden — fertig
+        }
+        // Kein Fehler, aber leerer Text: nächste Pfad-Variante probieren, bevor wir aufgeben.
+      }catch(err){
+        lastError = err;
+        console.error('OCR-Versuch fehlgeschlagen mit corePath', corePath, 'langPath', langPath, err);
+      }
     }
   }
 
