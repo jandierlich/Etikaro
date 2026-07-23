@@ -77,6 +77,7 @@
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
   }
   .dark-toggle svg{width:19px; height:19px;}
+  .hero-actions{display:flex; gap:8px;}
 
   /* Segmented control, overlapping hero bottom */
   .segmented{
@@ -303,9 +304,14 @@
       <div>
         <h1>Etikaro</h1>
       </div>
-      <button class="dark-toggle" id="darkToggle" title="Darstellung umschalten">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
-      </button>
+      <div class="hero-actions">
+        <button class="dark-toggle" id="guideBtn" title="Anleitung">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><circle cx="12" cy="16.5" r=".6" fill="currentColor"/></svg>
+        </button>
+        <button class="dark-toggle" id="darkToggle" title="Darstellung umschalten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -448,6 +454,41 @@
         <label class="btn btn-secondary" style="display:block; cursor:pointer;">Backup-Datei wählen<input type="file" id="importInput" accept="application/json" style="display:none;"></label>
       </div>
       <div class="list-row"><h3>Alle Daten löschen</h3><p>Entfernt sämtliche Einträge unwiderruflich von diesem Gerät.</p><button class="btn btn-danger" id="wipeBtn">Bestand komplett leeren</button></div>
+    </div>
+  </div>
+
+  <!-- ANLEITUNG SCREEN -->
+  <div class="screen" id="guideScreen">
+    <div class="screen-head"><h2>Anleitung</h2><button class="close" data-close="guideScreen">Schließen</button></div>
+    <div class="screen-body">
+      <div class="list-row">
+        <h3>1. Scannen</h3>
+        <p>Unten auf „Scannen" tippen, Etikett fotografieren. Danach den Rahmen im Zuschneide-Bildschirm auf den wichtigen Bereich ziehen (Ecken zum Anpassen, Mitte zum Verschieben) — das verbessert die Texterkennung deutlich. „Zuschneiden & Erkennen" antippen, oder „Ganzes Bild verwenden", um den Schritt zu überspringen.</p>
+      </div>
+      <div class="list-row">
+        <h3>2. Eintrag prüfen</h3>
+        <p>Der erkannte Text lässt sich direkt im Feld bearbeiten oder kürzen. Produktname, Kategorie, Menge und Notiz ausfüllen — bei Kategorie/Menge erscheinen Vorschläge aus früheren Einträgen, bei Notiz antippbare Chips. Anzahl mit +/- einstellen, dann „Speichern" oder „Speichern & nächstes Foto" für mehrere Scans hintereinander.</p>
+      </div>
+      <div class="list-row">
+        <h3>3. Bestand ansehen</h3>
+        <p>Oben zwischen „Liste", „Tabelle" und „Statistik" umschalten. Die Kategorie-Kacheln antippen, um danach zu filtern. Suchfeld findet auch bei Tippfehlern/Umlaut-Varianten. In der Liste eine Zeile nach links wischen, um sie direkt zu löschen — antippen öffnet sie zum Bearbeiten.</p>
+      </div>
+      <div class="list-row">
+        <h3>4. Export als PDF</h3>
+        <p>Unten „Export" öffnen, gewünschte Kategorien antippen (an/aus), „PDF-Vorschau erstellen". In der Vorschau prüfen und erst dann „PDF speichern".</p>
+      </div>
+      <div class="list-row">
+        <h3>5. Backup</h3>
+        <p>Unter „Backup" den kompletten Bestand als Datei sichern oder ein Backup wiederherstellen. Dort erscheinen auch automatisch erkannte Duplikate mit einem „Zusammenführen"-Knopf.</p>
+      </div>
+      <div class="list-row">
+        <h3>6. Darstellung</h3>
+        <p>Oben rechts im Kopfbereich zwischen hell/dunkel umschalten. Unter „Info" lässt sich zusätzlich eine Akzentfarbe wählen.</p>
+      </div>
+      <div class="list-row">
+        <h3>Gut zu wissen</h3>
+        <p>Alle Daten bleiben ausschließlich auf diesem Gerät — es gibt keinen Server. Die App funktioniert auch offline, sobald sie einmal geöffnet wurde.</p>
+      </div>
     </div>
   </div>
 

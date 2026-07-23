@@ -1,7 +1,7 @@
 // ===== Etikaro — App-Logik =====
 // Speicherung ausschließlich lokal (IndexedDB). Kein Server-Zugriff.
 
-const APP_VERSION = 'v17';
+const APP_VERSION = 'v19';
 
 const DB_NAME = 'etikaro-db';
 const DB_VERSION = 1;
@@ -83,6 +83,16 @@ function dbClearAll(){
 // ---------- Helpers ----------
 function uid(){ return 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
 function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function showUpdateBanner(){
+  if(document.getElementById('updateBanner')) return; // schon sichtbar
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.style.cssText = 'position:fixed; top:calc(env(safe-area-inset-top) + 10px); left:16px; right:16px; z-index:200; background:var(--violet); color:#fff; padding:12px 16px; border-radius:12px; font-size:14px; font-weight:600; box-shadow:0 6px 18px rgba(0,0,0,0.25); text-align:center;';
+  banner.textContent = 'Neue Version verfügbar — antippen zum Laden';
+  banner.addEventListener('click', ()=> window.location.reload());
+  document.body.appendChild(banner);
+}
+
 function showSaveSuccessAnimation(){
   const overlay = document.getElementById('saveSuccessOverlay');
   overlay.classList.add('show');
@@ -141,6 +151,8 @@ function applyThemePref(){
   if(pref === 'dark') document.documentElement.classList.add('force-dark');
   if(pref === 'light') document.documentElement.classList.add('force-light');
 }
+document.getElementById('guideBtn').addEventListener('click', ()=> openScreen('guideScreen'));
+
 document.getElementById('darkToggle').addEventListener('click', ()=>{
   const pref = localStorage.getItem('etikaro-theme');
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1126,13 +1138,10 @@ window.addEventListener('offline', updateOnlineStatus);
   if(versionEl) versionEl.textContent = `Etikaro ${APP_VERSION}`;
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('service-worker.js').catch(()=>{});
-    // Sobald eine neue Version aktiv wird, Seite automatisch neu laden,
-    // damit Updates nicht erst durch mehrfaches manuelles Neuladen ankommen.
-    let refreshedOnce = false;
+    // Statt automatisch neu zu laden (Risiko einer Neulade-Schleife bei mehrfachen
+    // Updates), zeigen wir einen Hinweis an und lassen den Nutzer selbst entscheiden.
     navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-      if(refreshedOnce) return;
-      refreshedOnce = true;
-      window.location.reload();
+      showUpdateBanner();
     });
   }
 })();
